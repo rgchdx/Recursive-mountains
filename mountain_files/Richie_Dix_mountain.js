@@ -5,6 +5,7 @@ var canvas;
 var gl;
 
 var positionsArray = [];
+var colorsArray = [];
     
 var radius = 4;
 var  fovy = 45.0;  // Field-of-view in Y direction angle (in degrees)           
@@ -17,6 +18,15 @@ var theta = 0;
     
 const at = vec3(0.0, 1.0, 0.0);
 const up = vec3(0.0, 1.0, 0.0);
+
+let colors = [
+    // white for the top
+    vec4(1.0, 1.0, 1.0, 1.0),
+    // green for the middle part
+    vec4(0.0, 1.0, 0.0, 1.0),
+    // brown for the base
+    vec4(0.5, 0.25, 0.1, 1.0)
+]
 
 window.onload = function init() {
 
@@ -38,7 +48,7 @@ window.onload = function init() {
 
     aspect =  canvas.width/canvas.height;
 
-    gl.clearColor(1.0, 1.0, 1.0, 1.0);
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
     gl.enable(gl.DEPTH_TEST);
 
@@ -49,13 +59,21 @@ window.onload = function init() {
     var program = initShaders(gl, "vertex-shader", "fragment-shader");
     gl.useProgram(program);
 
+    // POSITION buffer
     var vBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(positionsArray), gl.STATIC_DRAW);
-
     var positionLoc = gl.getAttribLocation(program, "aPosition");
     gl.vertexAttribPointer(positionLoc, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(positionLoc);
+
+    // COLOR buffer
+    var cBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(colorsArray), gl.STATIC_DRAW);
+    const vColor = gl.getAttribLocation(program, "vColor");
+    gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(vColor);
 
     modelViewMatrixLoc = gl.getUniformLocation(program, "uModelViewMatrix");
     projectionMatrixLoc = gl.getUniformLocation(program, "uProjectionMatrix");
@@ -66,6 +84,19 @@ window.onload = function init() {
 function triangle(a, b, c)
 {
     positionsArray.push(a, b, c);
+    // Assign colors based on the vertex position
+    let height = a[1] + b[1] + c[1];
+    if (height > 2.5) {
+        // Top part of the mountain
+        colorsArray.push(colors[0], colors[0], colors[0]);
+    } else if (height > 1.5) {
+        // Middle part of the mountain
+        colorsArray.push(colors[1], colors[1], colors[1]);
+    } else {
+        // Base part of the mountain
+        colorsArray.push(colors[2], colors[2], colors[2]);
+    }
+
 }
     
 function generateMountainTriangle(a, b, c, height, count) {
@@ -87,7 +118,7 @@ function generateMountainTriangle(a, b, c, height, count) {
     let newHeight = height * 0.5;
     let newCount = count - 1;
 
-    // Recursively divide the triangle into 3 parts with the peak
+    // Recursively divide the triangle
     generateMountainTriangle(a, ab, center, newHeight, newCount);
     generateMountainTriangle(ab, b, center, newHeight, newCount);
     generateMountainTriangle(b, bc, center, newHeight, newCount);

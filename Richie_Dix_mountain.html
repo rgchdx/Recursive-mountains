@@ -5,13 +5,16 @@
 #version 300 es
 
 in  vec4 aPosition;
-
+in vec4 vColor;
+out vec4 fColor;
 uniform mat4 uModelViewMatrix;
 uniform mat4 uProjectionMatrix;
 
 void main()
 {
     gl_Position = uProjectionMatrix*uModelViewMatrix*aPosition;
+    fColor = vColor;
+
 }
 </script>
 
@@ -19,13 +22,13 @@ void main()
 #version 300 es
 
 precision mediump float;
-
-out vec4 fColor;
+in vec4 fColor;
+out vec4 fragColor;
 
 void
 main()
 {
-    fColor = vec4(1.0, 0.0, 0.0, 1.0);;
+    fragColor = fColor;
 }
 </script>
 
