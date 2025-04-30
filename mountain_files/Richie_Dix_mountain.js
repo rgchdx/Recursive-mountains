@@ -31,7 +31,8 @@ window.onload = function init() {
         vec4(  1, 0, -1, 1 )
     ];
     
-    divideTriangle( vertices[0], vertices[1], vertices[2], 1, 3);
+    // Creating a more mountain like structure
+    generateMountainTriangle(vertices[0], vertices[1], vertices[2], 1.0, 5);
     
     gl.viewport(0, 0, canvas.width, canvas.height);
 
@@ -67,28 +68,32 @@ function triangle(a, b, c)
     positionsArray.push(a, b, c);
 }
     
-function divideTriangle(a, b, c, factor, count)
-{
-
-    // check for end of recursion                                               
-
-    if ( count === 0 ) {
+function generateMountainTriangle(a, b, c, height, count) {
+    if (count == 0) {
         triangle(a, b, c);
+        return;
     }
-    else {
 
-	//find midpoint
-	var midpoint = mix(c, mix( a, b, 0.5 ), 0.5);
+    // Calculate midpoints of each side
+    let ab = mix(a, b, 0.5);
+    let bc = mix(b, c, 0.5);
+    let ca = mix(c, a, 0.5);
 
-	midpoint = add(midpoint, vec4(0, factor*Math.random(), 0, 0));
-	
-        // three new triangles                                                  
-        --count;
-	var newFactor = factor * 0.75;
-        divideTriangle( a, b, midpoint, newFactor, count );
-        divideTriangle( c, a, midpoint, newFactor, count );
-        divideTriangle( b, c, midpoint, newFactor, count );
-    }
+    // Find the peak point of the mountain
+    let center = mix(mix(ab, bc, 0.5), ca, 0.5);
+    center = add(center, vec4(0, height * (Math.random() + 0.5), 0, 0));
+
+    // Lower height for next recursion
+    let newHeight = height * 0.5;
+    let newCount = count - 1;
+
+    // Recursively divide the triangle into 3 parts with the peak
+    generateMountainTriangle(a, ab, center, newHeight, newCount);
+    generateMountainTriangle(ab, b, center, newHeight, newCount);
+    generateMountainTriangle(b, bc, center, newHeight, newCount);
+    generateMountainTriangle(bc, c, center, newHeight, newCount);
+    generateMountainTriangle(c, ca, center, newHeight, newCount);
+    generateMountainTriangle(ca, a, center, newHeight, newCount);
 }
     
 var render = function(){
